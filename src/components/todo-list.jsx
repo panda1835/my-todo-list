@@ -117,7 +117,7 @@ export function TodoListComponent() {
 
   const groupedTasks = sortedTasks.reduce((acc, task) => {
     if (task.tags.length === 0) {
-      acc["Others"] = [...(acc["Others"] || []), task]
+      acc["others"] = [...(acc["others"] || []), task]
     } else {
       task.tags.forEach(tag => {
         acc[tag] = [...(acc[tag] || []), task]
