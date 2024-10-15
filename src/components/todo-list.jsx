@@ -128,7 +128,7 @@ export function TodoListComponent() {
 
   return (
     (<div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Advanced To-Do List</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Simple To-Do List</h1>
       <p className="text-sm text-gray-600 mb-6">{currentDate}</p>
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Tags</h2>
