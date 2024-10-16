@@ -3,7 +3,6 @@ import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Trash2, Edit2, Plus, X } from "lucide-react"
 
@@ -35,6 +34,13 @@ const TaskItem = ({
       className={`text-xs font-semibold px-2 py-1 rounded-full mr-2 ${priorityColors[task.priority]}`}>
       {task.priority}
     </span>
+    {task.tags.map(tag => (
+      <span
+        key={tag}
+        className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-1">
+        {tag}
+      </span>
+    ))}
     <Button variant="ghost" size="icon" onClick={onEdit}>
       <Edit2 className="h-4 w-4" />
     </Button>
@@ -44,11 +50,13 @@ const TaskItem = ({
   </li>
 )
 
-export function TodoListComponent() {
+export function AdvancedTodoListComponent() {
   const [tasks, setTasks] = useState([])
-  const [newTask, setNewTask] = useState("")
   const [currentDate, setCurrentDate] = useState("")
   const [editingTask, setEditingTask] = useState(null)
+  const [newTaskText, setNewTaskText] = useState("")
+  const [newTaskPriority, setNewTaskPriority] = useState("MEDIUM")
+  const [newTaskTags, setNewTaskTags] = useState([])
   const [tags, setTags] = useState([])
   const [newTag, setNewTag] = useState("")
 
@@ -73,18 +81,27 @@ export function TodoListComponent() {
     localStorage.setItem('tags', JSON.stringify(tags))
   }, [tasks, tags])
 
-  const addTask = () => {
-    if (newTask.trim() !== "") {
-      setTasks(
-        [...tasks, { id: Date.now(), text: newTask, completed: false, priority: "MEDIUM", tags: [] }]
-      )
-      setNewTask("")
+  const addNewTask = () => {
+    if (newTaskText.trim() !== "") {
+      const newTask = {
+        id: Date.now(),
+        text: newTaskText,
+        completed: false,
+        priority: newTaskPriority,
+        tags: newTaskTags,
+      }
+      setTasks([...tasks, newTask])
+      setNewTaskText("")
+      setNewTaskPriority("MEDIUM")
+      setNewTaskTags([])
     }
   }
 
-  const updateTask = (updatedTask) => {
-    setTasks(tasks.map(task => task.id === updatedTask.id ? updatedTask : task))
-    setEditingTask(null)
+  const updateTask = () => {
+    if (editingTask && editingTask.text.trim() !== "") {
+      setTasks(tasks.map(task => task.id === editingTask.id ? editingTask : task))
+      setEditingTask(null)
+    }
   }
 
   const toggleTask = (id) => {
@@ -157,58 +174,65 @@ export function TodoListComponent() {
           <Button onClick={addTag} size="icon"><Plus className="h-4 w-4" /></Button>
         </div>
       </div>
-      <h2 className="text-lg font-semibold mb-2">Tasks</h2>
-
-      <div className="flex mb-4">
+      <div className="mb-6 p-4 bg-gray-100 rounded">
+        <h3 className="font-semibold mb-2">{editingTask ? 'Edit Task' : 'Add New Task'}</h3>
         <Input
-          type="text"
-          placeholder="Add a new task"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          className="flex-grow mr-2"
-          onKeyPress={(e) => e.key === 'Enter' && addTask()} />
-        <Button onClick={addTask}>Add</Button>
-      </div>
-      <Separator className="mb-4" />
-      
-      {editingTask && (
-        <div className="mb-4 p-4 bg-gray-100 rounded">
-          <h3 className="font-semibold mb-2">Editing Task</h3>
-          <Input
-            value={editingTask.text}
-            onChange={(e) => setEditingTask({ ...editingTask, text: e.target.value })}
-            className="mb-2" />
-          <Select
-            value={editingTask.priority}
-            onValueChange={(value) => setEditingTask({ ...editingTask, priority: value })}>
-            <SelectTrigger className="mb-2">
-              <SelectValue placeholder="Select priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="LOW">Low</SelectItem>
-              <SelectItem value="MEDIUM">Medium</SelectItem>
-              <SelectItem value="HIGH">High</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {tags.map(tag => (
-              <label key={tag} className="flex items-center space-x-2">
-                <Checkbox
-                  checked={editingTask.tags.includes(tag)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setEditingTask({ ...editingTask, tags: [...editingTask.tags, tag] })
-                    } else {
-                      setEditingTask({ ...editingTask, tags: editingTask.tags.filter(t => t !== tag) })
-                    }
-                  }} />
-                <span>{tag}</span>
-              </label>
-            ))}
-          </div>
-          <Button onClick={() => updateTask(editingTask)}>Save</Button>
+          value={editingTask ? editingTask.text : newTaskText}
+          onChange={(e) => editingTask 
+            ? setEditingTask({...editingTask, text: e.target.value})
+            : setNewTaskText(e.target.value)
+          }
+          placeholder="Task description"
+          className="mb-2" />
+        <Select
+          value={editingTask ? editingTask.priority : newTaskPriority}
+          onValueChange={(value) => editingTask
+            ? setEditingTask({...editingTask, priority: value})
+            : setNewTaskPriority(value)
+          }>
+          <SelectTrigger className="mb-2">
+            <SelectValue placeholder="Select priority" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="LOW">Low</SelectItem>
+            <SelectItem value="MEDIUM">Medium</SelectItem>
+            <SelectItem value="HIGH">High</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="flex flex-wrap gap-2 mb-2">
+          {tags.map(tag => (
+            <label key={tag} className="flex items-center space-x-2">
+              <Checkbox
+                checked={editingTask 
+                  ? editingTask.tags.includes(tag)
+                  : newTaskTags.includes(tag)
+                }
+                onCheckedChange={(checked) => {
+                  if (editingTask) {
+                    setEditingTask(prev => ({
+                      ...prev,
+                      tags: checked 
+                        ? [...prev.tags, tag]
+                        : prev.tags.filter(t => t !== tag)
+                    }))
+                  } else {
+                    setNewTaskTags(prev => 
+                      checked ? [...prev, tag] : prev.filter(t => t !== tag))
+                  }
+                }} />
+              <span>{tag}</span>
+            </label>
+          ))}
         </div>
-      )}
+        <Button onClick={editingTask ? updateTask : addNewTask}>
+          {editingTask ? 'Update' : 'Add Task'}
+        </Button>
+        {editingTask && (
+          <Button onClick={() => setEditingTask(null)} className="ml-2">
+            Cancel
+          </Button>
+        )}
+      </div>
       {Object.entries(groupedTasks).map(([tag, tasks]) => (
         <div key={tag} className="mb-6">
           <h2 className="text-xl font-semibold mb-2">{tag}</h2>
