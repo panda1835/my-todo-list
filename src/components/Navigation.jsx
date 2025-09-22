@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   CheckSquare,
@@ -20,7 +21,6 @@ const Navigation = ({
   onProjectSelect,
   onProjectsUpdate,
   isAnonymous,
-  onManageClick,
 }) => {
   const { user, signOut, clearAllAnonymousData } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -57,11 +57,11 @@ const Navigation = ({
     return today.toLocaleDateString("en-US", options);
   };
 
-  // Sort projects the same way as Management component
+  // Sort projects by order_index (same way as Management component)
   const sortedProjects = [...projects].sort((a, b) => {
     if (a.is_special && !b.is_special) return -1;
     if (!a.is_special && b.is_special) return 1;
-    return a.name.localeCompare(b.name);
+    return (a.order_index || 0) - (b.order_index || 0);
   });
 
   const handleViewAllProjects = () => {
@@ -135,15 +135,16 @@ const Navigation = ({
             )}
 
             {/* Manage Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onManageClick}
-              className="w-full flex items-center gap-2 mb-2"
-            >
-              <Settings className="h-4 w-4" />
-              Manage
-            </Button>
+            <Link href="/manage">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full flex items-center gap-2 mb-2"
+              >
+                <Settings className="h-4 w-4" />
+                Manage
+              </Button>
+            </Link>
           </div>
 
           {/* Projects List */}

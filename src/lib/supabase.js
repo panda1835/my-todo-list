@@ -120,15 +120,20 @@ export const projectService = {
 
   async reorder(projects) {
     const user = await getCurrentUser();
-    const updates = projects.map((project) => ({
-      id: project.id,
-      order_index: project.order_index,
-      user_id: user.id,
-    }));
 
-    const { error } = await supabase.from("projects").upsert(updates);
+    // Update each project individually to ensure proper updates
+    for (const project of projects) {
+      const { error } = await supabase
+        .from("projects")
+        .update({ order_index: project.order_index })
+        .eq("id", project.id)
+        .eq("user_id", user.id);
 
-    if (error) throw error;
+      if (error) {
+        console.error("Error updating project:", project.id, error);
+        throw error;
+      }
+    }
   },
 };
 
