@@ -50,6 +50,21 @@ export function TaskItem({
           >
             {task.text}
           </span>
+          {task.description && (
+            <p
+              className={`text-sm mt-1 ${
+                task.completed ? "line-through text-gray-400" : "text-gray-600"
+              }`}
+            >
+              {task.description}
+            </p>
+          )}
+          {task.due_date && (
+            <span className="text-sm mt-1 text-gray-500 flex items-center">
+              <Calendar className="h-3 w-3 mr-1" />
+              {new Date(task.due_date).toLocaleDateString()}
+            </span>
+          )}
           <div className="flex items-center mt-1 gap-2 flex-wrap">
             {/* Priority badge - show on mobile (below task text) */}
             <span
@@ -72,13 +87,6 @@ export function TaskItem({
           {showTagLabel && (
             <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium">
               🏷️ {showTagLabel}
-            </span>
-          )}
-
-          {task.due_date && (
-            <span className="text-xs text-gray-500 flex items-center">
-              <Calendar className="h-3 w-3 mr-1" />
-              {new Date(task.due_date).toLocaleDateString()}
             </span>
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,6 +14,7 @@ import { Plus } from "lucide-react";
 
 export function AddTaskForm({ onAddTask, disabled = false, projectTags = [] }) {
   const [newTaskText, setNewTaskText] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("MEDIUM");
   const [newTaskTags, setNewTaskTags] = useState([]);
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
@@ -25,6 +27,7 @@ export function AddTaskForm({ onAddTask, disabled = false, projectTags = [] }) {
     try {
       await onAddTask({
         text: newTaskText.trim(),
+        description: newTaskDescription.trim() || null,
         priority: newTaskPriority,
         tags: newTaskTags,
         due_date: newTaskDueDate || null,
@@ -32,6 +35,7 @@ export function AddTaskForm({ onAddTask, disabled = false, projectTags = [] }) {
 
       // Reset form
       setNewTaskText("");
+      setNewTaskDescription("");
       setNewTaskPriority("MEDIUM");
       setNewTaskTags([]);
       setNewTaskDueDate("");
@@ -98,6 +102,18 @@ export function AddTaskForm({ onAddTask, disabled = false, projectTags = [] }) {
             <Plus className="h-4 w-4 mr-2" />
             Add
           </Button>
+        </div>
+
+        {/* Description field */}
+        <div className="mb-4">
+          <Textarea
+            placeholder="Add a description (optional)..."
+            value={newTaskDescription}
+            onChange={(e) => setNewTaskDescription(e.target.value)}
+            disabled={disabled}
+            className="w-full"
+            rows={3}
+          />
         </div>
       </form>
 

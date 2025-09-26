@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navigation from "./Navigation";
 import { TaskList } from "./TaskList";
 import { AddTaskForm } from "./AddTaskForm";
@@ -13,6 +14,8 @@ import { getSpecialProjectIds } from "@/lib/todoUtils";
 
 export function TodoListComponent() {
   const { isAnonymous } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedProject, setSelectedProject] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
 
@@ -36,12 +39,47 @@ export function TodoListComponent() {
   const { tags, loadTags } = useTags(isAnonymous);
   const { projectTags, loadProjectTags } = useTagManagement(isAnonymous);
 
-  // Set default selected project when projects load
-  useEffect(() => {
-    if (projects.length > 0 && !selectedProject) {
-      setSelectedProject(projects[0]);
+  // Handle project selection with URL updates
+  const handleProjectSelect = (project) => {
+    setSelectedProject(project);
+
+    // Update URL with project parameter
+    const params = new URLSearchParams(searchParams);
+    if (project?.id) {
+      params.set("project", project.id);
+    } else {
+      params.delete("project");
     }
-  }, [projects, selectedProject]);
+
+    // Replace the current URL without adding to history
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  // Set selected project from URL parameter or default when projects load
+  useEffect(() => {
+    if (projects.length > 0) {
+      const projectParam = searchParams.get("project");
+
+      if (projectParam) {
+        // Find project by ID from URL parameter
+        const projectFromUrl =
+          projects.find((p) => p.id === projectParam) ||
+          (projectParam === "all"
+            ? { id: "all", name: "All Projects", is_special: true }
+            : null);
+
+        if (
+          projectFromUrl &&
+          (!selectedProject || selectedProject.id !== projectFromUrl.id)
+        ) {
+          setSelectedProject(projectFromUrl);
+        }
+      } else if (!selectedProject) {
+        // Set default project if no URL parameter and no selected project
+        setSelectedProject(projects[0]);
+      }
+    }
+  }, [projects, searchParams, selectedProject, router]);
 
   // Load project tags when projects change
   useEffect(() => {
@@ -113,7 +151,7 @@ export function TodoListComponent() {
         isAnonymous={isAnonymous}
         projects={projects}
         selectedProject={selectedProject}
-        onProjectSelect={setSelectedProject}
+        onProjectSelect={handleProjectSelect}
         onProjectsUpdate={loadProjects}
       />
 

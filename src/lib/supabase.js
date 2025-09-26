@@ -1,9 +1,3 @@
-// Supabase helper functions for the todo app
-// First, install @supabase/supabase-js: npm install @supabase/supabase-js
-// Then create a .env.local file with your Supabase credentials:
-// NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-// NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -196,14 +190,17 @@ export const taskService = {
 
   async create(task) {
     const user = await getCurrentUser();
+    const projectId = task.projectId || task.project_id;
     const { data, error } = await supabase
       .from("tasks")
       .insert([
         {
           text: task.text,
+          description: task.description,
           priority: task.priority,
-          project_id: task.projectId,
+          project_id: projectId,
           completed: task.completed || false,
+          due_date: task.due_date,
           user_id: user.id,
         },
       ])
@@ -214,22 +211,34 @@ export const taskService = {
     const newTask = data[0];
 
     // Add tags if any
-    if (task.tags && task.tags.length > 0 && task.projectId) {
-      await this.updateTaskTags(newTask.id, task.tags, task.projectId);
+    if (task.tags && task.tags.length > 0 && projectId) {
+      await this.updateTaskTags(newTask.id, task.tags, projectId);
+      // Return the task with tags included
+      return {
+        ...newTask,
+        tags: task.tags,
+      };
     }
 
-    return newTask;
+    // Return task without tags
+    return {
+      ...newTask,
+      tags: [],
+    };
   },
 
   async update(id, updates) {
     const user = await getCurrentUser();
+    const projectId = updates.projectId || updates.project_id;
     const { data, error } = await supabase
       .from("tasks")
       .update({
         text: updates.text,
+        description: updates.description,
         priority: updates.priority,
-        project_id: updates.projectId,
+        project_id: projectId,
         completed: updates.completed,
+        due_date: updates.due_date,
       })
       .eq("id", id)
       .eq("user_id", user.id)
@@ -237,12 +246,23 @@ export const taskService = {
 
     if (error) throw error;
 
+    const updatedTask = data[0];
+
     // Update tags if provided
-    if (updates.tags !== undefined && updates.projectId !== undefined) {
-      await this.updateTaskTags(id, updates.tags, updates.projectId);
+    if (updates.tags !== undefined && projectId !== undefined) {
+      await this.updateTaskTags(id, updates.tags, projectId);
+      // Return the task with updated tags
+      return {
+        ...updatedTask,
+        tags: updates.tags,
+      };
     }
 
-    return data[0];
+    // If no tags were updated, preserve existing tags or set empty array
+    return {
+      ...updatedTask,
+      tags: updates.tags !== undefined ? updates.tags : [],
+    };
   },
 
   async delete(id) {

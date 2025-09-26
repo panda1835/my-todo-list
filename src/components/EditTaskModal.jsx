@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -18,6 +19,7 @@ export function EditTaskModal({
   projectTags = [],
 }) {
   const [editTaskText, setEditTaskText] = useState("");
+  const [editTaskDescription, setEditTaskDescription] = useState("");
   const [editTaskPriority, setEditTaskPriority] = useState("MEDIUM");
   const [editTaskTags, setEditTaskTags] = useState([]);
   const [editTaskDueDate, setEditTaskDueDate] = useState("");
@@ -27,6 +29,7 @@ export function EditTaskModal({
   useEffect(() => {
     if (task && isOpen) {
       setEditTaskText(task.text || "");
+      setEditTaskDescription(task.description || "");
       setEditTaskPriority(task.priority || "MEDIUM");
       setEditTaskTags(task.tags || []);
       setEditTaskDueDate(task.due_date || "");
@@ -36,6 +39,7 @@ export function EditTaskModal({
       // Reset form when modal is closed
       setIsFormReady(false);
       setEditTaskText("");
+      setEditTaskDescription("");
       setEditTaskPriority("MEDIUM");
       setEditTaskTags([]);
       setEditTaskDueDate("");
@@ -50,6 +54,7 @@ export function EditTaskModal({
     try {
       await onUpdate(task.id, {
         text: editTaskText.trim(),
+        description: editTaskDescription.trim() || null,
         priority: editTaskPriority,
         tags: editTaskTags,
         due_date: editTaskDueDate || null,
@@ -81,6 +86,12 @@ export function EditTaskModal({
               value={editTaskText}
               onChange={(e) => setEditTaskText(e.target.value)}
               placeholder="Task text"
+            />
+            <Textarea
+              value={editTaskDescription}
+              onChange={(e) => setEditTaskDescription(e.target.value)}
+              placeholder="Task description (optional)"
+              rows={3}
             />
             {/* Priority Selection */}
             <div className="space-y-2">
