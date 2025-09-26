@@ -71,6 +71,20 @@ export function AddTaskForm({ onAddTask, disabled = false, projectTags = [] }) {
             disabled={disabled}
             className="flex-grow"
           />
+        </div>
+
+        {/* Description field */}
+        <div className="mb-4">
+          <Textarea
+            placeholder="Add a description (optional)..."
+            value={newTaskDescription}
+            onChange={(e) => setNewTaskDescription(e.target.value)}
+            disabled={disabled}
+            className="w-full"
+            rows={3}
+          />
+        </div>
+        <div className="flex flex-col md:flex-row md:items-center md:gap-4">
           <div className="flex gap-2 flex-row">
             <Select
               value={newTaskPriority}
@@ -96,24 +110,12 @@ export function AddTaskForm({ onAddTask, disabled = false, projectTags = [] }) {
           </div>
           <Button
             type="submit"
-            className="w-full md:w-auto"
+            className="w-full md:w-auto mt-4 md:mt-0"
             disabled={disabled || !newTaskText.trim()}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add
           </Button>
-        </div>
-
-        {/* Description field */}
-        <div className="mb-4">
-          <Textarea
-            placeholder="Add a description (optional)..."
-            value={newTaskDescription}
-            onChange={(e) => setNewTaskDescription(e.target.value)}
-            disabled={disabled}
-            className="w-full"
-            rows={3}
-          />
         </div>
       </form>
 
