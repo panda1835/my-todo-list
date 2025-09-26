@@ -1,8 +1,8 @@
-import {AdvancedTodoListComponent} from '@/components/advanced-todo-list';
+import { AppContainer } from '@/components/AppContainer';
 
 const Page = () => {
   return (
-    <AdvancedTodoListComponent />
+    <AppContainer />
   );
 }
 
